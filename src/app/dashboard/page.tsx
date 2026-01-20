@@ -1,16 +1,25 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '../lib/supabaseClient'
+import { createBrowserClient } from '@supabase/ssr'
+
 
 export default function Dashboard() {
   const [todos, setTodos] = useState([])
   const [task, setTask] = useState('')
 
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+
+
   const fetchTodos = async () => {
     const {
       data: { user }
     } = await supabase.auth.getUser()
+
+    if (!user) return <Loading />
 
     const { data, error } = await supabase
       .from('todos')
@@ -27,6 +36,8 @@ export default function Dashboard() {
     const {
       data: { user }
     } = await supabase.auth.getUser()
+
+    if (!user) return
 
     const { error } = await supabase.from('todos').insert([
       {
