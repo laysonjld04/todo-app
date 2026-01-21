@@ -1,12 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '../../lib/supabaseClient'
+import { createClient } from '@/lib/supabaseClient'
 
 export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [message, setMessage] = useState('')
+  const supabase = createClient()
 
   const signUp = async () => {
     const { error } = await supabase.auth.signUp({
