@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
+import type { ProxyHandler } from 'next/server'
 
-export async function middleware(req: Request) {
-  const res = NextResponse.next()
+export async function proxy(request: ProxyHandler) {
+  const response = NextResponse.next()
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,28 +11,28 @@ export async function middleware(req: Request) {
     {
       cookies: {
         get(name) {
-            return req.cookies.get(name)?.value
+          return request.cookies.get(name)?.value
         },
         set(name, value, options) {
-            res.cookies.set(name, value, options)
+          response.cookies.set(name, value, options)
         },
         remove(name, options) {
-            res.cookies.set(name, '', { ...options, maxAge: 0 })
+          response.cookies.set(name, '', { ...options, maxAge: 0 })
         }
       }
     }
   )
 
-  // OPTIONAL auth guard
+  // 🔒 Auth guard
   const {
     data: { user }
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return NextResponse.redirect(new URL('/auth/login', req.url))
+    return NextResponse.redirect(new URL('/auth/login', request.url))
   }
 
-  return res
+  return response
 }
 
 export const config = {
